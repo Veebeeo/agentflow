@@ -1,0 +1,21 @@
+{
+  "folders": [
+    { "path": ".", "name": "agentflow" },
+    { "path": "functions", "name": "functions" },
+    { "path": "web", "name": "web" }
+  ],
+  "settings": {
+    "editor.formatOnSave": true,
+    "files.exclude": {
+      "**/node_modules": true,
+      "**/.next": true
+    },
+    "files.associations": {
+      "*.code-workspace": "jsonc"
+    },
+    "search.exclude": {
+      "**/node_modules": true,
+      "**/package-lock.json": true
+    }
+  }
+}

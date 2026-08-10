@@ -1,0 +1,14 @@
+{
+  "recommendations": [
+    "graphql.vscode-graphql",
+    "graphql.vscode-graphql-syntax",
+    "redhat.vscode-yaml",
+    "ms-azuretools.vscode-docker",
+    "mtxr.sqltools",
+    "mtxr.sqltools-driver-pg",
+    "usernamehw.errorlens",
+    "dbaeumer.vscode-eslint",
+    "esbenp.prettier-vscode"
+  ],
+  "unwantedRecommendations": []
+}

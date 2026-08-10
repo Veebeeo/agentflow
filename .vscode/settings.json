@@ -1,0 +1,11 @@
+{
+    "files.exclude": {
+        "functions": true,
+        "web": true
+    },
+    "yaml.format.singleQuote": true,
+    "editor.tabSize": 2,
+    "[sql]": {
+        "editor.tabSize": 2
+    }
+}
