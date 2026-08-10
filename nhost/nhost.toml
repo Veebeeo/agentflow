@@ -1,0 +1,99 @@
+# AgentFlow backend configuration.
+
+
+[global]
+
+# Hasura resolves {{AGENTFLOW_FUNCTIONS_URL}} in actions.yaml, cron_triggers.yaml
+# and the event triggers from this variable. Locally the functions container is
+# reachable on the compose network as http://functions:3000/v1 . In Nhost Cloud
+# set it to https://<subdomain>.functions.<region>.nhost.run/v1 .
+[[global.environment]]
+name = 'AGENTFLOW_FUNCTIONS_URL'
+value = '{{ secrets.AGENTFLOW_FUNCTIONS_URL }}'
+
+# Shared secret between Hasura and the functions. Every handler rejects a
+# request that does not carry it, so nobody can call the executor directly.
+[[global.environment]]
+name = 'AGENTFLOW_FUNCTIONS_SECRET'
+value = '{{ secrets.AGENTFLOW_FUNCTIONS_SECRET }}'
+
+# 32-byte base64 key used to encrypt org_secrets values at rest.
+[[global.environment]]
+name = 'AGENTFLOW_SECRETS_KEY'
+value = '{{ secrets.AGENTFLOW_SECRETS_KEY }}'
+
+[[global.environment]]
+name = 'LLM_PROVIDER'
+value = '{{ secrets.LLM_PROVIDER }}'
+
+[[global.environment]]
+name = 'LLM_API_KEY'
+value = '{{ secrets.LLM_API_KEY }}'
+
+[[global.environment]]
+name = 'LLM_MODEL'
+value = '{{ secrets.LLM_MODEL }}'
+
+[[global.environment]]
+name = 'SLACK_WEBHOOK_URL'
+value = '{{ secrets.SLACK_WEBHOOK_URL }}'
+
+# Comma-separated hostname suffixes the http_request step may call.
+# Empty means "anything public", which is still guarded by the SSRF checks in
+# functions/_lib/safe-fetch.ts. Set it in production.
+[[global.environment]]
+name = 'HTTP_ALLOWED_HOSTS'
+value = '{{ secrets.HTTP_ALLOWED_HOSTS }}'
+
+[hasura]
+adminSecret = '{{ secrets.HASURA_GRAPHQL_ADMIN_SECRET }}'
+webhookSecret = '{{ secrets.NHOST_WEBHOOK_SECRET }}'
+
+[[hasura.jwtSecrets]]
+type = 'HS256'
+key = '{{ secrets.HASURA_GRAPHQL_JWT_SECRET }}'
+
+[hasura.settings]
+enableConsole = true
+enableRemoteSchemaPermissions = false
+# The browser talks to Hasura directly for queries and subscriptions.
+corsDomain = ['http://localhost:3000']
+
+[functions]
+[functions.node]
+version = 20
+
+[auth]
+[auth.redirections]
+clientUrl = 'http://localhost:3000'
+allowedUrls = ['http://localhost:3000']
+
+[auth.signUp]
+enabled = true
+
+[auth.method]
+[auth.method.emailPassword]
+# Off for local development so the demo accounts work immediately.
+# Turn this on before anything real.
+emailVerificationRequired = false
+hibpEnabled = false
+
+[auth.session]
+[auth.session.accessToken]
+expiresIn = 900
+
+[auth.session.refreshToken]
+expiresIn = 2592000
+
+[observability]
+[observability.grafana]
+adminPassword = '{{ secrets.GRAFANA_ADMIN_PASSWORD }}'
+
+[postgres]
+
+[postgres.resources.storage]
+capacity = 10
+
+[postgres.settings]
+
+[storage]
