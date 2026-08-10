@@ -1,0 +1,98 @@
+table:
+  name: workflow_triggers
+  schema: public
+object_relationships:
+  - name: trigger_type_info
+    using:
+      foreign_key_constraint_on: type
+  - name: workflow
+    using:
+      foreign_key_constraint_on: workflow_id
+insert_permissions:
+  - role: user
+    permission:
+      check:
+        _and:
+          - trigger_type_info:
+              is_privileged:
+                _eq: false
+          - workflow:
+              organization:
+                members:
+                  _and:
+                    - user_id:
+                        _eq: X-Hasura-User-Id
+                    - role:
+                        _in:
+                          - owner
+                          - editor
+      columns:
+        - workflow_id
+        - type
+        - is_enabled
+        - config
+        - cron_expression
+    comment: Webhook triggers are privileged and cannot be created here at all. They go through the createWebhookTrigger action, which mints the signing token server-side and returns it once.
+select_permissions:
+  - role: user
+    permission:
+      columns:
+        - id
+        - workflow_id
+        - type
+        - is_enabled
+        - config
+        - cron_expression
+        - next_run_at
+        - last_fired_at
+        - created_at
+        - updated_at
+      filter:
+        workflow:
+          organization:
+            members:
+              user_id:
+                _eq: X-Hasura-User-Id
+    comment: secret_hash is excluded from the column list. Even an owner never reads it back through the API.
+update_permissions:
+  - role: user
+    permission:
+      columns:
+        - is_enabled
+        - config
+        - cron_expression
+      filter:
+        workflow:
+          organization:
+            members:
+              _and:
+                - user_id:
+                    _eq: X-Hasura-User-Id
+                - role:
+                    _in:
+                      - owner
+                      - editor
+      check:
+        workflow:
+          organization:
+            members:
+              _and:
+                - user_id:
+                    _eq: X-Hasura-User-Id
+                - role:
+                    _in:
+                      - owner
+                      - editor
+delete_permissions:
+  - role: user
+    permission:
+      filter:
+        workflow:
+          organization:
+            members:
+              _and:
+                - user_id:
+                    _eq: X-Hasura-User-Id
+                - role:
+                    _eq: owner
+    comment: Detaching an inbound endpoint is an owner decision.

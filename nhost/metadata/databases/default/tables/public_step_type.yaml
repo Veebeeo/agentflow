@@ -1,0 +1,9 @@
+table:
+  name: step_type
+  schema: public
+select_permissions:
+  - role: user
+    permission:
+      columns: '*'
+      filter: {}
+    comment: Reference data. Needed by the builder UI to list valid options.

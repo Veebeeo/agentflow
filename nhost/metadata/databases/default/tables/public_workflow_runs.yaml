@@ -1,0 +1,58 @@
+table:
+  name: workflow_runs
+  schema: public
+object_relationships:
+  - name: organization
+    using:
+      foreign_key_constraint_on: org_id
+  - name: workflow
+    using:
+      foreign_key_constraint_on: workflow_id
+array_relationships:
+  - name: step_runs
+    using:
+      foreign_key_constraint_on:
+        column: workflow_run_id
+        table:
+          name: step_runs
+          schema: public
+select_permissions:
+  - role: user
+    permission:
+      columns:
+        - id
+        - workflow_id
+        - org_id
+        - status
+        - trigger_type
+        - triggered_by
+        - input
+        - output
+        - error
+        - next_position
+        - billable_calls
+        - started_at
+        - finished_at
+        - created_at
+        - updated_at
+      filter:
+        organization:
+          members:
+            user_id:
+              _eq: X-Hasura-User-Id
+      allow_aggregations: true
+    comment: 'Read only, and lease_token / lease_expires_at are not exposed. There is no insert, update or delete permission for any user role: execution state is written by the action handlers alone, so a client cannot fabricate a run, mark one succeeded, or free a lease.'
+event_triggers:
+  - name: workflow_run_created
+    definition:
+      enable_manual: true
+      insert:
+        columns: '*'
+    retry_conf:
+      interval_sec: 10
+      num_retries: 3
+      timeout_sec: 60
+    webhook: '{{AGENTFLOW_FUNCTIONS_URL}}/execute-run'
+    headers:
+      - name: x-agentflow-secret
+        value_from_env: AGENTFLOW_FUNCTIONS_SECRET

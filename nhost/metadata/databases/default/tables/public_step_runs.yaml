@@ -1,0 +1,25 @@
+table:
+  name: step_runs
+  schema: public
+object_relationships:
+  - name: approver
+    using:
+      foreign_key_constraint_on: approved_by
+  - name: run
+    using:
+      foreign_key_constraint_on: workflow_run_id
+  - name: step
+    using:
+      foreign_key_constraint_on: workflow_step_id
+select_permissions:
+  - role: user
+    permission:
+      columns: '*'
+      filter:
+        run:
+          organization:
+            members:
+              user_id:
+                _eq: X-Hasura-User-Id
+      allow_aggregations: true
+    comment: This is what the live subscription reads. The same org filter applies to the websocket, so subscribing with a guessed workflow_run_id from another organization returns an empty stream rather than an error.

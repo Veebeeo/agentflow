@@ -1,0 +1,143 @@
+table:
+  name: workflow_steps
+  schema: public
+object_relationships:
+  - name: step_type_info
+    using:
+      foreign_key_constraint_on: type
+  - name: workflow
+    using:
+      foreign_key_constraint_on: workflow_id
+insert_permissions:
+  - role: user
+    permission:
+      check:
+        _or:
+          - _and:
+              - step_type_info:
+                  is_privileged:
+                    _eq: false
+              - workflow:
+                  organization:
+                    members:
+                      _and:
+                        - user_id:
+                            _eq: X-Hasura-User-Id
+                        - role:
+                            _in:
+                              - owner
+                              - editor
+          - _and:
+              - step_type_info:
+                  is_privileged:
+                    _eq: true
+              - workflow:
+                  organization:
+                    members:
+                      _and:
+                        - user_id:
+                            _eq: X-Hasura-User-Id
+                        - role:
+                            _eq: owner
+      columns:
+        - workflow_id
+        - position
+        - name
+        - type
+        - config
+        - retry_limit
+        - timeout_ms
+    comment: Layer 2. Privilege is read from step_type.is_privileged rather than a hard-coded list, so adding a dangerous step type later cannot silently inherit editor access. db_write and notify are privileged today.
+select_permissions:
+  - role: user
+    permission:
+      columns: '*'
+      filter:
+        workflow:
+          organization:
+            members:
+              user_id:
+                _eq: X-Hasura-User-Id
+      allow_aggregations: true
+update_permissions:
+  - role: user
+    permission:
+      columns:
+        - position
+        - name
+        - type
+        - config
+        - retry_limit
+        - timeout_ms
+      filter:
+        _or:
+          - _and:
+              - step_type_info:
+                  is_privileged:
+                    _eq: false
+              - workflow:
+                  organization:
+                    members:
+                      _and:
+                        - user_id:
+                            _eq: X-Hasura-User-Id
+                        - role:
+                            _in:
+                              - owner
+                              - editor
+          - _and:
+              - step_type_info:
+                  is_privileged:
+                    _eq: true
+              - workflow:
+                  organization:
+                    members:
+                      _and:
+                        - user_id:
+                            _eq: X-Hasura-User-Id
+                        - role:
+                            _eq: owner
+      check:
+        _or:
+          - _and:
+              - step_type_info:
+                  is_privileged:
+                    _eq: false
+              - workflow:
+                  organization:
+                    members:
+                      _and:
+                        - user_id:
+                            _eq: X-Hasura-User-Id
+                        - role:
+                            _in:
+                              - owner
+                              - editor
+          - _and:
+              - step_type_info:
+                  is_privileged:
+                    _eq: true
+              - workflow:
+                  organization:
+                    members:
+                      _and:
+                        - user_id:
+                            _eq: X-Hasura-User-Id
+                        - role:
+                            _eq: owner
+    comment: The same expression guards both sides, so an editor can neither edit an existing db_write step nor convert an http_request step into one.
+delete_permissions:
+  - role: user
+    permission:
+      filter:
+        workflow:
+          organization:
+            members:
+              _and:
+                - user_id:
+                    _eq: X-Hasura-User-Id
+                - role:
+                    _in:
+                      - owner
+                      - editor
+    comment: Removing a step is not an escalation, so editors may reorganize.

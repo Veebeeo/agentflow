@@ -1,0 +1,73 @@
+table:
+  name: organizations
+  schema: public
+object_relationships:
+  - name: usage
+    using:
+      manual_configuration:
+        column_mapping:
+          id: org_id
+        insertion_order: null
+        remote_table:
+          name: org_usage_current_period
+          schema: public
+array_relationships:
+  - name: members
+    using:
+      foreign_key_constraint_on:
+        column: org_id
+        table:
+          name: org_members
+          schema: public
+  - name: runs
+    using:
+      foreign_key_constraint_on:
+        column: org_id
+        table:
+          name: workflow_runs
+          schema: public
+  - name: workflows
+    using:
+      foreign_key_constraint_on:
+        column: org_id
+        table:
+          name: workflows
+          schema: public
+insert_permissions:
+  - role: user
+    permission:
+      check: {}
+      columns:
+        - name
+        - slug
+    comment: 'Anyone signed in may create an organization. Quota columns are absent on purpose: a tenant cannot set its own limits. A database trigger makes the creator the first owner in the same transaction.'
+select_permissions:
+  - role: user
+    permission:
+      columns: '*'
+      filter:
+        members:
+          user_id:
+            _eq: X-Hasura-User-Id
+      allow_aggregations: true
+    comment: Layer 1. An organization is visible only to its own members.
+update_permissions:
+  - role: user
+    permission:
+      columns:
+        - name
+      filter:
+        members:
+          _and:
+            - user_id:
+                _eq: X-Hasura-User-Id
+            - role:
+                _eq: owner
+      check:
+        members:
+          _and:
+            - user_id:
+                _eq: X-Hasura-User-Id
+            - role:
+                _eq: owner
+    comment: Owners may rename their organization. Quota stays server-side.

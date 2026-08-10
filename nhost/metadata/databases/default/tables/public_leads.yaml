@@ -1,0 +1,52 @@
+table:
+  name: leads
+  schema: public
+object_relationships:
+  - name: organization
+    using:
+      foreign_key_constraint_on: org_id
+insert_permissions:
+  - role: user
+    permission:
+      check:
+        organization:
+          members:
+            _and:
+              - user_id:
+                  _eq: X-Hasura-User-Id
+              - role:
+                  _in:
+                    - owner
+                    - editor
+      set:
+        created_by: X-Hasura-User-Id
+      columns:
+        - org_id
+        - email
+        - company
+        - message
+        - source
+    comment: A watched business table. Inserting here fires the lead_created event trigger, which starts any workflow listening for it.
+select_permissions:
+  - role: user
+    permission:
+      columns: '*'
+      filter:
+        organization:
+          members:
+            user_id:
+              _eq: X-Hasura-User-Id
+event_triggers:
+  - name: lead_created
+    definition:
+      enable_manual: true
+      insert:
+        columns: '*'
+    retry_conf:
+      interval_sec: 10
+      num_retries: 2
+      timeout_sec: 30
+    webhook: '{{AGENTFLOW_FUNCTIONS_URL}}/events/lead-created'
+    headers:
+      - name: x-agentflow-secret
+        value_from_env: AGENTFLOW_FUNCTIONS_SECRET

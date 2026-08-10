@@ -1,0 +1,24 @@
+table:
+  name: org_usage_current_period
+  schema: public
+object_relationships:
+  - name: organization
+    using:
+      manual_configuration:
+        column_mapping:
+          org_id: id
+        insertion_order: null
+        remote_table:
+          name: organizations
+          schema: public
+select_permissions:
+  - role: user
+    permission:
+      columns: '*'
+      filter:
+        organization:
+          members:
+            user_id:
+              _eq: X-Hasura-User-Id
+      allow_aggregations: true
+    comment: The required aggregation. A view rather than a computed field so Hasura can aggregate over it, and scoped through the same membership check as every other table.

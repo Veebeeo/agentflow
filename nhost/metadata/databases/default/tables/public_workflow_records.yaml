@@ -1,0 +1,20 @@
+table:
+  name: workflow_records
+  schema: public
+object_relationships:
+  - name: organization
+    using:
+      foreign_key_constraint_on: org_id
+  - name: run
+    using:
+      foreign_key_constraint_on: workflow_run_id
+select_permissions:
+  - role: user
+    permission:
+      columns: '*'
+      filter:
+        organization:
+          members:
+            user_id:
+              _eq: X-Hasura-User-Id
+    comment: Output of db_write steps. Written by the executor only.

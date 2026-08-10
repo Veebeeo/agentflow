@@ -1,0 +1,34 @@
+table:
+  name: notifications
+  schema: public
+object_relationships:
+  - name: organization
+    using:
+      foreign_key_constraint_on: org_id
+  - name: run
+    using:
+      foreign_key_constraint_on: workflow_run_id
+select_permissions:
+  - role: user
+    permission:
+      columns: '*'
+      filter:
+        organization:
+          members:
+            user_id:
+              _eq: X-Hasura-User-Id
+    comment: Delivery log for notify steps. Inserted by the executor only.
+event_triggers:
+  - name: notification_created
+    definition:
+      enable_manual: true
+      insert:
+        columns: '*'
+    retry_conf:
+      interval_sec: 15
+      num_retries: 3
+      timeout_sec: 30
+    webhook: '{{AGENTFLOW_FUNCTIONS_URL}}/events/deliver-notification'
+    headers:
+      - name: x-agentflow-secret
+        value_from_env: AGENTFLOW_FUNCTIONS_SECRET
