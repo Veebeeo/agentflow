@@ -7,11 +7,12 @@
 
 /** Memberships drive the whole UI: which orgs exist for me, and as what role. */
 export const MY_MEMBERSHIPS = /* GraphQL */ `
-  query MyMemberships {
-    org_members(order_by: { created_at: asc }) {
+  query MyMemberships($userId: uuid!) {
+    org_members(where: { user_id: { _eq: $userId } }, order_by: { created_at: asc }) {
       id
       role
       org_id
+      user_id
       organization {
         id
         name

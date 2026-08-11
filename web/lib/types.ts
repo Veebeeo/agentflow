@@ -25,6 +25,7 @@ export interface Membership {
   id: string;
   role: OrgRole;
   org_id: string;
+  user_id: string;
   organization: {
     id: string;
     name: string;

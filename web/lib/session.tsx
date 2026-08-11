@@ -48,7 +48,15 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   const [activeOrgId, setActiveOrgIdState] = useState<string | null>(null);
 
   const loadMemberships = useCallback(async () => {
-    const data = await gql<{ org_members: Membership[] }>(MY_MEMBERSHIPS);
+    // Read the id straight from the session rather than from React state, so
+    // this does not depend on setUserId having landed first and does not need
+    // userId in the dependency array.
+    const uid = nhost().getUserSession()?.user?.id;
+    if (!uid) {
+      setMemberships([]);
+      return;
+    }
+    const data = await gql<{ org_members: Membership[] }>(MY_MEMBERSHIPS, { userId: uid });
     setMemberships(data.org_members);
 
     setActiveOrgIdState((current) => {
@@ -100,7 +108,11 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   }, [router]);
 
   const value = useMemo<SessionValue>(() => {
-    const activeOrg = memberships.find((m) => m.org_id === activeOrgId) ?? null;
+    // Members can see every membership row in their own organization, so this
+    // list is not just the caller's. Matching on org_id alone picks up whoever
+    // happens to be first and reports their role as yours.
+    const activeOrg =
+      memberships.find((m) => m.org_id === activeOrgId && m.user_id === userId) ?? null;
     return {
       loading,
       userId,
