@@ -18,15 +18,13 @@ export function optional(name: string, fallback = ''): string {
 
 /** Hasura's GraphQL endpoint, as seen from inside the platform network. */
 export function graphqlUrl(): string {
-  // HASURA_GRAPHQL_GRAPHQL_URL is the full internal endpoint. NHOST_GRAPHQL_URL
-  // is the public base and stops at /v1, so deriving the metadata endpoint from
-  // it produces a 404 on a host that does not serve the metadata API at all.
+  // HASURA_GRAPHQL_GRAPHQL_URL is the full internal endpoint in the local
+  // stack. NHOST_GRAPHQL_URL is the public base, and Nhost Cloud serves
+  // GraphQL at /v1 while 404ing on /v1/graphql, so it is used unchanged.
   const explicit =
     process.env.HASURA_GRAPHQL_GRAPHQL_URL || process.env.HASURA_GRAPHQL_URL;
   if (explicit) return explicit;
 
-  // Nhost Cloud serves GraphQL at /v1 and 404s on /v1/graphql, while the local
-  // stack is the other way round. Use the URL as given rather than appending.
   const base = process.env.NHOST_GRAPHQL_URL;
   if (base) return base.replace(/\/+$/, '');
 
@@ -36,14 +34,11 @@ export function graphqlUrl(): string {
 /** Metadata endpoint, derived from the GraphQL one so there is one source of truth. */
 export function metadataUrl(): string {
   if (process.env.NHOST_METADATA_URL) return process.env.NHOST_METADATA_URL;
-  // Derive from the GraphQL URL by replacing everything from /v1 onwards.
-  // A regex anchored on the full '/v1/graphql' suffix silently no-ops when the
-  // URL is shaped differently, and posting metadata commands to the GraphQL
-  // endpoint returns 200 with an error body, so the failure looks like success.
-  const url = graphqlUrl();
-  const marker = url.lastIndexOf('/v1');
-  if (marker === -1) throw new Error(`Cannot derive metadata URL from ${url}`);
-  return `${url.slice(0, marker)}/v1/metadata`;
+
+  // The metadata API lives at <origin>/v1/metadata regardless of the path the
+  // GraphQL endpoint happens to use.
+  const url = new URL(graphqlUrl());
+  return `${url.origin}/v1/metadata`;
 }
 
 export function adminSecret(): string {

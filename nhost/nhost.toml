@@ -29,6 +29,10 @@ name = 'LLM_API_KEY'
 value = '{{ secrets.LLM_API_KEY }}'
 
 [[global.environment]]
+name = 'NHOST_METADATA_URL'
+value = '{{ secrets.NHOST_METADATA_URL }}'
+
+[[global.environment]]
 name = 'LLM_MODEL'
 value = '{{ secrets.LLM_MODEL }}'
 
