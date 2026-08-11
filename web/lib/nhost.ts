@@ -37,9 +37,12 @@ export function graphqlWsUrl(): string {
     process.env.NEXT_PUBLIC_NHOST_GRAPHQL_URL ??
     `https://${process.env.NEXT_PUBLIC_NHOST_SUBDOMAIN}.graphql.${process.env.NEXT_PUBLIC_NHOST_REGION}.nhost.run/v1`;
 
+  // The GraphQL endpoint is spelled differently in different environments:
+  // Nhost Cloud serves it at /v1, the local stack at /v1/graphql. Whatever the
+  // HTTP endpoint is, the socket lives at the same path, so use it unchanged
+  // rather than guessing at a suffix.
   const normalized = base.replace(/\/+$/, '');
-  const withPath = normalized.endsWith('/graphql') ? normalized : `${normalized}/graphql`;
-  return withPath.replace(/^http/, 'ws');
+  return normalized.replace(/^http/, 'ws');
 }
 
 /** A token that is valid for at least another minute. */
