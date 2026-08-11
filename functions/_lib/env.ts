@@ -33,7 +33,9 @@ export function graphqlUrl(): string {
 
 /** Metadata endpoint, derived from the GraphQL one so there is one source of truth. */
 export function metadataUrl(): string {
-  if (process.env.NHOST_METADATA_URL) return process.env.NHOST_METADATA_URL;
+  const explicit =
+    process.env.AGENTFLOW_METADATA_URL || process.env.NHOST_METADATA_URL;
+  if (explicit) return explicit;
 
   // The metadata API lives at <origin>/v1/metadata regardless of the path the
   // GraphQL endpoint happens to use.

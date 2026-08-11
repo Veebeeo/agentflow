@@ -28,9 +28,6 @@ value = '{{ secrets.LLM_PROVIDER }}'
 name = 'LLM_API_KEY'
 value = '{{ secrets.LLM_API_KEY }}'
 
-[[global.environment]]
-name = 'NHOST_METADATA_URL'
-value = '{{ secrets.NHOST_METADATA_URL }}'
 
 [[global.environment]]
 name = 'LLM_MODEL'
@@ -47,6 +44,9 @@ value = '{{ secrets.SLACK_WEBHOOK_URL }}'
 name = 'HTTP_ALLOWED_HOSTS'
 value = '{{ secrets.HTTP_ALLOWED_HOSTS }}'
 
+[[global.environment]]
+name = 'AGENTFLOW_METADATA_URL'
+value = '{{ secrets.AGENTFLOW_METADATA_URL }}'
 
 [hasura]
 version = 'v2.48.10-ce'
