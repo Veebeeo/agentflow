@@ -15,6 +15,7 @@ import { log } from './_lib/log';
 interface EventPayload {
   event?: { data?: { new?: { id?: string } } };
   run_id?: string;
+  payload?: { run_id?: string };
 }
 
 export default async function handler(req: Request, res: Response) {
@@ -22,7 +23,13 @@ export default async function handler(req: Request, res: Response) {
     requirePlatformSecret(req);
 
     const body = (req.body ?? {}) as EventPayload;
-    const runId = body.run_id ?? body.event?.data?.new?.id;
+    // Three shapes arrive here and all three are legitimate:
+    //   { run_id }                     a direct call
+    //   { event: { data: { new }}}     a Hasura event trigger
+    //   { payload: { run_id }}         a Hasura one-off scheduled event,
+    //                                  which wraps the payload we gave it
+    const runId =
+      body.run_id ?? body.payload?.run_id ?? body.event?.data?.new?.id;
 
     if (!runId) {
       // 200 rather than 400: a malformed delivery will never become valid, and

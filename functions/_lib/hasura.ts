@@ -75,8 +75,13 @@ export async function scheduleOneOff(
     }),
   });
 
+  const text = await res.text();
   if (!res.ok) {
-    const text = await res.text();
     throw new Error(`Failed to schedule continuation: ${res.status} ${text}`);
+  }
+  // Hasura answers 200 for a GraphQL request posted to the wrong endpoint, so
+  // a 200 alone does not mean the event was created. Check the body.
+  if (text.includes('"errors"') || !text.includes('success')) {
+    throw new Error(`Continuation not scheduled, unexpected response: ${text}`);
   }
 }

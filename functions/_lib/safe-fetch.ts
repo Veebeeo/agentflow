@@ -201,17 +201,24 @@ function once(
         },
         // Pin the socket to an address we already validated. Without this the
         // hostname would be resolved a second time and could answer differently.
-        lookup: (_hostname, _opts, callback) => {
+        // Node calls this with { all: true } in some paths and expects an array
+        // of records back, not a bare address. Returning the wrong shape makes
+        // it read .address off a string and hand undefined to the connector.
+        lookup: (_hostname, opts, callback) => {
           const address = addresses[0];
           if (!address) {
             (callback as (e: Error | null) => void)(new Error('No validated address'));
             return;
           }
-          (callback as (e: Error | null, a: string, f: number) => void)(
-            null,
-            address,
-            net.isIP(address),
-          );
+          const family = net.isIP(address);
+          if (opts && typeof opts === 'object' && (opts as { all?: boolean }).all) {
+            (callback as unknown as (
+              e: Error | null,
+              a: Array<{ address: string; family: number }>,
+            ) => void)(null, addresses.map((a) => ({ address: a, family: net.isIP(a) })));
+            return;
+          }
+          (callback as (e: Error | null, a: string, f: number) => void)(null, address, family);
         },
       },
       (response) => {
