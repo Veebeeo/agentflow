@@ -25,8 +25,10 @@ export function graphqlUrl(): string {
     process.env.HASURA_GRAPHQL_GRAPHQL_URL || process.env.HASURA_GRAPHQL_URL;
   if (explicit) return explicit;
 
+  // Nhost Cloud serves GraphQL at /v1 and 404s on /v1/graphql, while the local
+  // stack is the other way round. Use the URL as given rather than appending.
   const base = process.env.NHOST_GRAPHQL_URL;
-  if (base) return base.replace(/\/+$/, '') + '/graphql';
+  if (base) return base.replace(/\/+$/, '');
 
   return 'http://graphql:8080/v1/graphql';
 }
