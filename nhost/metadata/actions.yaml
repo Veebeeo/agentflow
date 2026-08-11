@@ -1,6 +1,55 @@
-actions: []
+actions:
+  - name: approveStep
+    definition:
+      kind: synchronous
+      handler: '{{AGENTFLOW_FUNCTIONS_URL}}/approve-step'
+      headers:
+        - name: x-agentflow-secret
+          value_from_env: AGENTFLOW_FUNCTIONS_SECRET
+      timeout: 25
+    permissions:
+      - role: user
+    comment: Clears or rejects an approval gate. Layer 2 lives in the handler because the decision depends on run state, not on a row the caller can select.
+  - name: createWebhookTrigger
+    definition:
+      kind: synchronous
+      handler: '{{AGENTFLOW_FUNCTIONS_URL}}/create-webhook-trigger'
+      headers:
+        - name: x-agentflow-secret
+          value_from_env: AGENTFLOW_FUNCTIONS_SECRET
+      timeout: 25
+    permissions:
+      - role: user
+    comment: Owner-only. Mints the signing token and returns it once.
+  - name: triggerWorkflowRun
+    definition:
+      kind: synchronous
+      handler: '{{AGENTFLOW_FUNCTIONS_URL}}/trigger-workflow-run'
+      headers:
+        - name: x-agentflow-secret
+          value_from_env: AGENTFLOW_FUNCTIONS_SECRET
+      timeout: 25
+    permissions:
+      - role: user
+    comment: Starts a run. The handler re-derives the caller's role from session_variables and the database. Nothing about the caller is taken from the request body.
+  - name: triggerWorkflowWebhook
+    definition:
+      kind: synchronous
+      handler: '{{AGENTFLOW_FUNCTIONS_URL}}/webhook-trigger'
+      forward_client_headers: true
+      headers:
+        - name: x-agentflow-secret
+          value_from_env: AGENTFLOW_FUNCTIONS_SECRET
+      timeout: 25
+    permissions:
+      - role: public
+    comment: The inbound endpoint for external systems. Open to the public role because callers have no Nhost session; authentication is the bearer token in the Authorization header, checked against the trigger's stored hash in constant time.
 custom_types:
   enums: []
   input_objects: []
-  objects: []
+  objects:
+    - name: TriggerWorkflowRunOutput
+    - name: ApproveStepOutput
+    - name: CreateWebhookTriggerOutput
+    - name: WebhookAcceptedOutput
   scalars: []

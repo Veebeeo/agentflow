@@ -1,0 +1,50 @@
+type Mutation {
+  approveStep(
+    step_run_id: uuid!
+    decision: String!
+    note: String
+  ): ApproveStepOutput!
+}
+
+type Mutation {
+  createWebhookTrigger(
+    workflow_id: uuid!
+  ): CreateWebhookTriggerOutput!
+}
+
+type Mutation {
+  triggerWorkflowRun(
+    workflow_id: uuid!
+    input: jsonb
+  ): TriggerWorkflowRunOutput!
+}
+
+type Mutation {
+  triggerWorkflowWebhook(
+    workflow_id: uuid!
+    payload: jsonb
+  ): WebhookAcceptedOutput!
+}
+
+type TriggerWorkflowRunOutput {
+  workflow_run_id: uuid!
+  status: String!
+}
+
+type ApproveStepOutput {
+  step_run_id: uuid!
+  workflow_run_id: uuid!
+  status: String!
+}
+
+type CreateWebhookTriggerOutput {
+  trigger_id: uuid!
+  endpoint: String!
+  """ Returned exactly once. Only its SHA-256 hash is stored. """ token: String!
+}
+
+type WebhookAcceptedOutput {
+  workflow_run_id: uuid!
+  status: String!
+}
+
