@@ -36,7 +36,10 @@ export function graphqlWsUrl(): string {
   const base =
     process.env.NEXT_PUBLIC_NHOST_GRAPHQL_URL ??
     `https://${process.env.NEXT_PUBLIC_NHOST_SUBDOMAIN}.graphql.${process.env.NEXT_PUBLIC_NHOST_REGION}.nhost.run/v1`;
-  return `${base.replace(/^http/, 'ws').replace(/\/$/, '')}/graphql`;
+
+  const normalized = base.replace(/\/+$/, '');
+  const withPath = normalized.endsWith('/graphql') ? normalized : `${normalized}/graphql`;
+  return withPath.replace(/^http/, 'ws');
 }
 
 /** A token that is valid for at least another minute. */

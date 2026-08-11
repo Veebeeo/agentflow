@@ -52,7 +52,19 @@ export function subscribe<T>(
         next: (result) => {
           if (result.data) handlers.onData(result.data);
         },
-        error: (error) => handlers.onError?.(error),
+        // graphql-ws hands back a raw DOM Event on a transport failure, which
+        // stringifies to "[object Event]" and tells you nothing. Name the URL
+        // that actually failed instead.
+        error: (error) => {
+          const detail =
+            error instanceof Error
+              ? error.message
+              : error && typeof error === 'object' && 'type' in error
+                ? `websocket ${(error as { type: string }).type} connecting to ${graphqlWsUrl()}`
+                : String(error);
+          console.error('[subscribe]', detail, error);
+          handlers.onError?.(new Error(detail));
+        },
         complete: () => handlers.onStatus?.('closed'),
       },
     );
