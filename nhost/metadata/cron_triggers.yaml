@@ -1,1 +1,14 @@
-[]
+- name: workflow_scheduler
+  webhook: '{{AGENTFLOW_FUNCTIONS_URL}}/cron/scheduler'
+  schedule: '* * * * *'
+  include_in_metadata: true
+  payload: {}
+  retry_conf:
+    num_retries: 2
+    retry_interval_seconds: 10
+    timeout_seconds: 55
+    tolerance_seconds: 21600
+  headers:
+    - name: x-agentflow-secret
+      value_from_env: AGENTFLOW_FUNCTIONS_SECRET
+  comment: 'Evaluates scheduled triggers every minute. The function itself is idempotent: it advances next_run_at in the same statement that claims the trigger, so an overlapping tick cannot double-fire.'
