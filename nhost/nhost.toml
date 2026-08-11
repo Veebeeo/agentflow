@@ -61,7 +61,7 @@ corsDomain = ['http://localhost:3000']
 
 [functions]
 [functions.node]
-version = 20
+version = 22
 
 [auth]
 [auth.redirections]
