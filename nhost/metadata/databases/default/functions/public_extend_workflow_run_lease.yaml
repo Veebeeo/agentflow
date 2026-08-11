@@ -1,0 +1,6 @@
+function:
+  name: extend_workflow_run_lease
+  schema: public
+configuration:
+  custom_root_fields: {}
+  exposed_as: mutation

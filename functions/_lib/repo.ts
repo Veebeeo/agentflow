@@ -204,19 +204,20 @@ export async function getQuotaSnapshot(
 /* ------------------------------------------------------------------ */
 
 export async function reserveQuota(orgId: string, amount = 1): Promise<boolean> {
-  const data = await adminGraphql<{ reserve_org_quota: boolean }>(
+  // Zero rows back means the check failed, which is the whole signal.
+  const data = await adminGraphql<{ reserve_org_quota: Array<{ id: string }> }>(
     `mutation Reserve($orgId: uuid!, $amount: Int!) {
-       reserve_org_quota(args: { p_org: $orgId, p_amount: $amount })
+       reserve_org_quota(args: { p_org: $orgId, p_amount: $amount }) { id }
      }`,
     { orgId, amount },
   );
-  return data.reserve_org_quota;
+  return data.reserve_org_quota.length > 0;
 }
 
 export async function releaseQuota(orgId: string, amount = 1): Promise<void> {
   await adminGraphql(
     `mutation Release($orgId: uuid!, $amount: Int!) {
-       release_org_quota(args: { p_org: $orgId, p_amount: $amount })
+       release_org_quota(args: { p_org: $orgId, p_amount: $amount }) { id }
      }`,
     { orgId, amount },
   );
@@ -252,23 +253,23 @@ export async function createRun(input: {
 }
 
 export async function claimRun(runId: string, token: string, leaseSeconds: number): Promise<boolean> {
-  const data = await adminGraphql<{ claim_workflow_run: boolean }>(
+  const data = await adminGraphql<{ claim_workflow_run: Array<{ id: string }> }>(
     `mutation Claim($runId: uuid!, $token: uuid!, $lease: Int!) {
-       claim_workflow_run(args: { p_run: $runId, p_token: $token, p_lease_seconds: $lease })
+       claim_workflow_run(args: { p_run: $runId, p_token: $token, p_lease_seconds: $lease }) { id }
      }`,
     { runId, token, lease: leaseSeconds },
   );
-  return data.claim_workflow_run;
+  return data.claim_workflow_run.length > 0;
 }
 
 export async function extendLease(runId: string, token: string, leaseSeconds: number): Promise<boolean> {
-  const data = await adminGraphql<{ extend_workflow_run_lease: boolean }>(
+  const data = await adminGraphql<{ extend_workflow_run_lease: Array<{ id: string }> }>(
     `mutation Extend($runId: uuid!, $token: uuid!, $lease: Int!) {
-       extend_workflow_run_lease(args: { p_run: $runId, p_token: $token, p_lease_seconds: $lease })
+       extend_workflow_run_lease(args: { p_run: $runId, p_token: $token, p_lease_seconds: $lease }) { id }
      }`,
     { runId, token, lease: leaseSeconds },
   );
-  return data.extend_workflow_run_lease;
+  return data.extend_workflow_run_lease.length > 0;
 }
 
 export async function getRunForExecution(runId: string): Promise<RunForExecution | null> {
