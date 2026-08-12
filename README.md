@@ -9,9 +9,14 @@ Built on Nhost (PostgreSQL, Hasura, Auth, Functions) with a Next.js frontend.
 
 ---
 
+## Video Demonstration
+
+https://youtu.be/VNKVwbYJxdY
+
 ## Try it
 
 **Live app: https://agentflow-wheat.vercel.app**
+
 
 Sign in with any of these. Password for all four is `Password123!`
 
@@ -194,15 +199,6 @@ web/
 | Quota indicator | `web/components/QuotaMeter.tsx` |
 
 ---
-
-## Documentation
-
-| | |
-|---|---|
-| [docs/02-architecture.md](docs/02-architecture.md) | How execution works and why it is shaped this way |
-| [docs/03-security.md](docs/03-security.md) | Threat model, defences, and the known gaps |
-| [docs/04-demo-script.md](docs/04-demo-script.md) | The walkthrough, step by step |
-| [docs/05-troubleshooting.md](docs/05-troubleshooting.md) | What goes wrong and why |
 
 ---
 
