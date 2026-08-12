@@ -78,8 +78,14 @@ Create `.secrets` in the repo root:
 
 ```
 HASURA_GRAPHQL_ADMIN_SECRET='<openssl rand -hex 32>'
-HASURA_GRAPHQL_JWT_SECRET='<openssl rand -hex 32>'
 NHOST_WEBHOOK_SECRET='<openssl rand -hex 32>'
+
+# RS256 keypair. Generated for you by `nhost config pull` after linking a
+# cloud project. For a purely local setup, generate one with:
+#   openssl genpkey -algorithm RSA -pkeyopt rsa_keygen_bits:2048
+NHOST_JWT_KID='<a UUID>'
+NHOST_JWT_PRIVATE_KEY="<PEM, newlines escaped as \n>"
+NHOST_JWT_PUBLIC_KEY="<PEM, newlines escaped as \n>"
 
 AGENTFLOW_FUNCTIONS_URL='http://functions:3000'
 AGENTFLOW_FUNCTIONS_SECRET='<openssl rand -hex 32>'
@@ -93,6 +99,7 @@ LLM_MODEL='llama-3.3-70b-versatile'
 GRAFANA_ADMIN_PASSWORD='<openssl rand -hex 32>'
 SLACK_WEBHOOK_URL=''
 HTTP_ALLOWED_HOSTS=''
+
 ```
 
 `AGENTFLOW_SECRETS_KEY` must decode to exactly 32 bytes, which is what
